@@ -1,0 +1,8 @@
+.gradle/
+**/build/
+local.properties
+*.jks
+*.keystore
+
+# Never publish the private signing key or password
+signing/

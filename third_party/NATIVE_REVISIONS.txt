@@ -1,0 +1,3 @@
+160000 commit fe7e12eb08b45cab694799bcc77edfdce66bcae0	AndroidLibXrayLite
+160000 commit e68480088a48c8930d29f54e30e9d6deaaf32c47	badvpn
+160000 commit 232d69a5ebb4461b572bd3f3b97088091e01c243	libancillary

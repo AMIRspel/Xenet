@@ -1,0 +1,19 @@
+package app.xenet.client;
+import org.junit.*;import static org.junit.Assert.*;import java.util.*;import org.json.*;
+public class GroupAndRankTest {
+ Profile p(String name,String group)throws Exception {return new Profile(name,group,name,"x",443,"vless","[{\"protocol\":\"vless\"}]");}
+ JSONObject data()throws Exception{return Parser.obj("profiles",new JSONArray(),"groups",new JSONArray(),"selected","");}
+ JSONObject score(double n,long ping,String err)throws Exception{return Parser.obj("mbps",n,"ping",ping,"error",err);}
+ @Test public void oversizedStoreRejectedBeforeEncryption()throws Exception{JSONObject d=data();char[] large=new char[4*1024*1024];Arrays.fill(large,'x');d.put("padding",new String(large));try{Store.validate(d);fail();}catch(IllegalArgumentException e){assertEquals("STORE_TOO_LARGE",e.getMessage());}}
+ @Test public void fastestFirst()throws Exception{Profile a=p("a","g"),b=p("b","g");Map<String,JSONObject> r=new HashMap<>();r.put("a",score(5,20,""));r.put("b",score(9,40,""));assertEquals("b",SpeedRanker.sort(Arrays.asList(a,b),r).get(0).id);}
+ @Test public void tiesUsePing()throws Exception{Map<String,JSONObject> r=new HashMap<>();r.put("a",score(5,50,""));r.put("b",score(5,20,""));assertEquals("b",SpeedRanker.sort(Arrays.asList(p("a","g"),p("b","g")),r).get(0).id);}
+ @Test public void untestedBeforeFailures()throws Exception{Map<String,JSONObject> r=new HashMap<>();r.put("a",score(-1,-1,"TIMEOUT"));assertEquals("b",SpeedRanker.sort(Arrays.asList(p("a","g"),p("b","g")),r).get(0).id);}
+ @Test public void stableUntestedOrder()throws Exception{List<Profile> input=Arrays.asList(p("c","g"),p("a","g"));assertEquals("c",SpeedRanker.sort(input,new HashMap<>()).get(0).id);assertEquals("c",input.get(0).id);}
+ @Test public void failedNumericResultNotRankedAsSuccess()throws Exception{Map<String,JSONObject> r=new HashMap<>();r.put("a",score(100,5,"SHORT_SAMPLE"));r.put("b",score(1,10,""));assertEquals("b",SpeedRanker.sort(Arrays.asList(p("a","g"),p("b","g")),r).get(0).id);}
+ @Test public void replaceKeepsSelectionId()throws Exception{JSONObject d=data();Store.replaceGroup(d,"g","Group","url",Collections.singletonList(p("old","g")));d.put("selected","old");Store.replaceGroup(d,"g","Updated","url",Collections.singletonList(p("new","g")));Store.validate(d);assertEquals("old",d.getString("selected"));assertEquals("new",d.getJSONArray("profiles").getJSONObject(0).getString("name"));}
+ @Test public void groupOrderDoesNotJumpOnRefresh()throws Exception{JSONObject d=data();Store.replaceGroup(d,"a","a","url",Collections.singletonList(p("a","a")));Store.replaceGroup(d,"b","b","url",Collections.singletonList(p("b","b")));Store.replaceGroup(d,"a","a","url",Collections.singletonList(p("new","a")));assertEquals("a",d.getJSONArray("groups").getJSONObject(0).getString("id"));}
+ @Test public void deletesOnlyChosenGroup()throws Exception{JSONObject d=data();Store.replaceGroup(d,"a","a","u",Collections.singletonList(p("a","a")));Store.replaceGroup(d,"b","b","u",Collections.singletonList(p("b","b")));Catalog.deleteGroup(d,"a");assertEquals(1,d.getJSONArray("groups").length());assertEquals("b",d.getJSONArray("profiles").getJSONObject(0).getString("id"));}
+ @Test public void deletesOnlyChosenProfile()throws Exception{JSONObject d=data();Store.append(d,Arrays.asList(p("a",""),p("b","")));Catalog.deleteProfile(d,"a");Store.validate(d);assertEquals(1,d.getJSONArray("profiles").length());assertEquals("b",d.getString("selected"));}
+ @Test public void canonicalIgnoresKeyOrder()throws Exception{assertEquals(Catalog.canonical(new JSONObject("{\"a\":1,\"b\":2}")),Catalog.canonical(new JSONObject("{\"b\":2,\"a\":1}")));}
+ @Test public void duplicatePayloadIdsRemainDistinct()throws Exception{List<Profile> kept=Catalog.retainIds(Parser.arr(p("a","g").json(),p("b","g").json()),"g",Arrays.asList(p("x","g"),p("y","g")));assertEquals("a",kept.get(0).id);assertEquals("b",kept.get(1).id);}
+}
