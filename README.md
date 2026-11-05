@@ -1,48 +1,69 @@
 # Xenet
 
-Xenet is an experimental Android VPN client with an English interface and support for Xray-based configurations. This repository publishes the application source and bundled dependencies for inspection and development. The app uses a third-party Xray-based native engine; it is **not** a new protocol engine written from scratch.
+**An Android VPN client for managing and testing Xray-based connections.**
 
-> **Status: experimental.** This build has not been tested on a physical Android device, a user's live subscription, or across device vendors. It has not had a security, DNS/IPv6 leak, or privacy audit. The bundled native engine has 4 KiB ELF alignment; compatibility with 16 KiB page-size devices is unresolved. Do not treat a successful build or a public repository as a security guarantee.
+Xenet brings subscriptions, individual configurations, connection controls, and server testing together in a clean Android interface.
 
-## Downloads
+[Download Xenet](https://github.com/AMIRspel/Xenet/releases/tag/v1.0) · [Telegram channel](https://t.me/XenetVPN) · [Support](https://t.me/XenetSup) · [Telegram bot](https://t.me/XenetBot)
 
-Experimental Android APKs, when available, are listed on the [Releases page](https://github.com/AMIRspel/Xenet/releases). Read the warnings and release notes before installing.
+---
+
+## Download
+
+Get Xenet from the [Releases page](https://github.com/AMIRspel/Xenet/releases/tag/v1.0).
+
+| APK | Device |
+| --- | --- |
+| **Universal** | Recommended if you do not know your phone's architecture |
+| **ARM64** | 64-bit ARM devices |
+| **ARMv7** | 32-bit ARM devices |
+
+Xenet targets Android 5.0 (API 21) and later. The project owner reports successful hands-on testing; compatibility can vary between devices and networks. The release includes `SHA256SUMS.txt` for checking downloaded files.
 
 ## Features
 
-- Import supported config links, outbound JSON, subscriptions and QR codes.
-- Subscription updates report in-progress, success, and failure; failed downloads or parsing do not commit a replacement.
-- **Real Test** samples a verified HTTPS download through one configuration at a time and ranks successful results within their group. The sample uses up to 2 MiB or 3 seconds of response body per server, plus overhead. Slow servers and connection setup can take longer. Results vary by network and server; Cloudflare sees the server's exit IP.
-- Per-app routing choices, connection settings, and reconnect controls. Changes to routing and connection settings require Stop, then Connect.
+- **Flexible imports:** add supported configuration links, outbound JSON, subscriptions, or QR codes.
+- **Subscription updates:** see when an update is running, succeeds, or fails. Failed downloads or parsing do not replace the existing group.
+- **Real Test:** measure a download through each configuration and rank successful results within their group.
+- **App routing:** choose whether all apps, selected apps, or all except selected apps use the VPN.
+- **Connection controls:** adjust supported network and recovery settings, with light and dark themes.
 
-Not all protocol features or devices are supported. In particular, the bundled engine does not support Hysteria2, TUIC, SSR or Shadowsocks plugins through this UI. See source code and included licenses for details.
+### How Real Test works
 
-## Build
+Real Test checks configurations one at a time using an HTTPS download from Cloudflare through each server. Each response-body sample is limited to 2 MiB or 3 seconds, plus network overhead. Connection setup and slow servers can take longer. Cloudflare sees the server's exit IP, and results vary with the network and server; they are not a guarantee of future speed.
 
-Requirements: JDK 21, Android SDK Platform 35 and Build Tools 35.0.0, plus internet access to resolve Gradle/Maven dependencies. Set `ANDROID_HOME` or `local.properties` and run:
+## Supported configurations
+
+Xenet uses a third-party Xray-based engine and supports VMess, VLESS, Trojan, Shadowsocks, SOCKS and HTTP(S) links, plus supported Xray outbound JSON. Support depends on the configuration and transport. Hysteria2, TUIC, SSR and Shadowsocks plugins are not supported by the bundled UI and engine.
+
+## Build from source
+
+Requirements: JDK 21, Android SDK Platform 35, Build Tools 35.0.0, and internet access for Gradle and Maven dependencies. Set `ANDROID_HOME` or use `local.properties`, then run:
 
 ```sh
 ./gradlew :app:assembleDebug :app:testReleaseUnitTest :app:lintRelease
 ```
 
-The debug APK is signed with your own Android debug key. It cannot update the owner's signed APK. Release builds without a local signing key are unsigned. Signing credentials are **not** in this repository and must never be committed. The source configuration supports a local `signing/` directory, which `.gitignore` excludes.
+Debug builds use your own Android debug key and cannot update an APK signed with the project owner's key. Release builds without a local signing key are unsigned. Signing credentials are not included in this repository.
 
-Version name is `1.0`, version code `101`, and the application ID for these builds is `app.xenet.client.v1`. The project includes the prebuilt AndroidLibXrayLite AAR and native tun2socks libraries. A snapshot of Xray core source is included in `third_party/archives/`; Go dependencies are not fully vendored. The `third_party/AndroidLibXrayLite/go.mod` file records pinned dependencies. Reproducing the included native binaries from source has not been verified. See `third_party/` and the license files for upstream components and license notices.
+The application ID is `app.xenet.client.v1` and the current version is `1.0` (version code `101`). The repository includes the prebuilt AndroidLibXrayLite AAR, native tun2socks libraries, and an Xray core source snapshot under `third_party/archives/`. Go dependencies are not fully vendored, and reproduction of the bundled native binaries has not been verified.
 
-## Testing
+## Testing and compatibility
 
-The most recent local release build and lint completed with **135 JVM unit tests passed**, zero lint errors and 19 warnings. JVM tests are not Android device tests. The subscription tests cover response parsing, fetch failure and commit failure with test fixtures; they do not validate a real provider link or Android UI lifecycle. SHA-256 of the app's signing certificate (not the private key):
+The local release build passed **135 JVM unit tests**; lint reported zero errors and 19 warnings. The owner has also tested the app directly. Device coverage and network conditions vary. Compatibility of the bundled native engine with 16 KiB memory page devices remains unresolved, and no independent security or DNS/IPv6 leak audit has been completed.
 
-`86a5ba6579403cce23120c28f9243fcd081f7a41af9ca7c78f6cdf6de30d8500`
+APK signing certificate SHA-256:
+
+```text
+86a5ba6579403cce23120c28f9243fcd081f7a41af9ca7c78f6cdf6de30d8500
+```
+
+## Contact
+
+- Telegram channel: [@XenetVPN](https://t.me/XenetVPN)
+- Support: [@XenetSup](https://t.me/XenetSup)
+- Bot: [@XenetBot](https://t.me/XenetBot)
 
 ## License
 
-The application is distributed under GPL-3.0; see [LICENSE](LICENSE). Third-party components retain their own licenses; see the notices in `app/src/main/assets/licenses/` and `third_party/`.
-
----
-
-## فارسی
-
-زینت یک کلاینت آزمایشی اندروید است. تست واقعی، نمونه‌ای از دانلود را از مسیر هر کانفیگ می‌سنجد و نتیجه‌های سریع‌تر را در گروه خودشان بالاتر می‌آورد. این تست اینترنت مصرف می‌کند و تضمین سرعت آینده نیست.
-
-سورس برای بررسی منتشر شده، اما برنامه هنوز روی گوشی واقعی و لینک ساب کاربران آزمایش نشده و ممیزی امنیتی و بررسی نشت DNS/IPv6 انجام نشده است. سازگاری هسته با دستگاه‌های ۱۶ کیلوبایتی نیز هنوز تأیید نشده است. کلید خصوصی امضا در این مخزن قرار ندارد.
+The application is distributed under [GPL-3.0](LICENSE). Third-party components retain their respective licenses; see the notices in `app/src/main/assets/licenses/` and `third_party/`.
